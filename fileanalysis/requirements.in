@@ -1,0 +1,5 @@
+pip-init==0.3.0
+yolk==0.4.3
+pillow==4.2.1
+#scipy==0.16.0
+#numpy==1.13.1
