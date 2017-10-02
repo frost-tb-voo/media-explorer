@@ -1,20 +1,27 @@
 # media-explorer
 Media explorer with a web browser for your local storage.
 
+![doc/demo](./doc/demo.png)
+
+(Showing example images above are downloaded from www.irasutoya.com)
+
 ## Requirement
-- python, pip, pip-install
+- Python (2.7.14), pip, pip-install, and more.
 
 ### Dependency install with pip
-In `./fileanalysis` directory,
+In [./fileanalysis](./fileanalysis) directory,
 
 - `pip install pip-tools==1.9.0`
 - `pip-compile requirements.in`
 - `pip install -r requirements.txt`
 
+### Python 3.5
+If you are using 3.5, please modify `unicode` statements in [./fileanalysis/media-indexer.py](./fileanalysis/media-indexer.py).
+
 ## How to Use
-- Edit `./fileanalysis/fileanalysis.py` and rewrite `directory` var into your targetting dir.
-- `python ./fileanalysis/fileanalysis.py`
-- Open `./view/index.html` with your browser
+- Edit [./fileanalysis/media-indexer.py](./fileanalysis/media-indexer.py) and rewrite `directory` var into your targetting dir.
+- `python ./fileanalysis/media-indexer.py`
+- Open [./view/index.html](./view/index.html) with your browser
 
 ## License
 The files in following directory are NOT provided in MIT license.
