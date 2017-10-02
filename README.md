@@ -23,6 +23,9 @@ If you are using 3.5, please modify `unicode` statements in [./fileanalysis/medi
 - `python ./fileanalysis/media-indexer.py`
 - Open [./view/index.html](./view/index.html) with your browser
 
+### Indexing number of files
+In 32 bit OS, The upper limit of `# of files` which the viewer can load is about 60K files.
+
 ## License
 The files in following directory are NOT provided in MIT license.
 
