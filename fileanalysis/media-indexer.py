@@ -189,6 +189,6 @@ for pictA, pictB in combinations(_files, 2):
 
 
 #print(json.dumps(directories, sort_keys=True, indent=2))
-fw = open('../view/images.json','w')
+fw = open('./view/images.json','w')
 json.dump(directories, fw, indent=1)
 
