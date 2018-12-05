@@ -1,13 +1,46 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+"""similarity analysis."""
 
 import sys
 import json
 import os
-import glob
+#import glob
 import traceback
 
-directory = os.path.dirname(__file__)
-directory = 'C:/'
-directory = '/home'
+from optparse import OptionParser
+from argparse import ArgumentParser
+
+desc = u'{0} [Args] [Options]\nDetailed options -h or --help'.format(__file__)
+
+parser = ArgumentParser(description=desc)
+
+parser.add_argument(
+    '-d', '--dir',
+    type = str, # int, bool
+    dest = 'directories',
+    default = ['/home'],
+    nargs = '*',
+    required = True,
+    help = 'analyzing directory path'
+)
+parser.add_argument(
+    '-o', '--output',
+    type = str, # int, bool
+    dest = 'output',
+    default = '../view/images.json',
+    required = True,
+    help = 'output json path'
+)
+
+args = parser.parse_args()
+print (args)
+
+
+#targetDirList = [os.path.dirname(__file__)]
+targetDirList = args.directories
+outputPath = args.output
 
 
 DEFAULT_ENCODING='utf8'
@@ -30,34 +63,33 @@ METHOD=3
 THRESHOLD=0.07
 
 
-root_dir = os.path.abspath(directory)
+targetFiles = []
+for targetDir in targetDirList:
+    for root, dirs, files in os.walk(os.path.abspath(targetDir)):
+        targets = [os.path.join(root, f) for f in files]
+        targetFiles.extend(targets)
 
-target_files = []
-for root, dirs, files in os.walk(root_dir):
-    targets = [os.path.join(root, f) for f in files]
-    target_files.extend(targets)
-
-# print(json.dumps(target_files, sort_keys=True, indent=2))
-
+# print(json.dumps(targetFiles, sort_keys=True, indent=1))
 
 files = []
-imgs = filter(lambda f:f.endswith('.jpg'), target_files)
+imgs = filter(lambda f:f.endswith('.jpeg'), targetFiles)
 files.extend(imgs)
-imgs = filter(lambda f:f.endswith('.png'), target_files)
+imgs = filter(lambda f:f.endswith('.jpg'), targetFiles)
 files.extend(imgs)
-imgs = filter(lambda f:f.endswith('.bmp'), target_files)
+imgs = filter(lambda f:f.endswith('.png'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f:f.endswith('.bmp'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f:f.endswith('.gif'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f:f.endswith('.flv'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f:f.endswith('.swf'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f:f.endswith('.mp4'), targetFiles)
 files.extend(imgs)
 
-# print(json.dumps(files, sort_keys=True, indent=2))
-
-imgs = filter(lambda f:f.endswith('.gif'), target_files)
-files.extend(imgs)
-imgs = filter(lambda f:f.endswith('.flv'), target_files)
-files.extend(imgs)
-imgs = filter(lambda f:f.endswith('.swf'), target_files)
-files.extend(imgs)
-imgs = filter(lambda f:f.endswith('.mp4'), target_files)
-files.extend(imgs)
+# print(json.dumps(files, sort_keys=True, indent=1))
 
 
 from PIL import Image
@@ -66,20 +98,65 @@ directories = []
 directoriesmap = {}
 fids = {}
 
-count = 0
+if os.path.exists(outputPath):
+    with open(outputPath,'r') as fr:
+        directories = json.load(fr)
+
+notExists = []
+for dirobj in directories:
+    directory = dirobj['directory']
+    if not os.path.exists(directory):
+        notExists.append(dirobj)
+        continue
+    directoriesmap[directory] = dirobj
+
+    imagesNotExists = []
+    for image in dirobj['images']:
+        file = directory + os.sep + image['name']
+        if not os.path.exists(file):
+            imagesNotExists.append(image)
+            continue
+        fids[file] = image
+    for image in imagesNotExists:
+        dirobj['images'].remove(image)
+
+    for image in dirobj['images']:
+        if 'similarities' in image:
+            del image['similarities']
+
+for dirobj in notExists:
+    directories.remove(dirobj)
+
+maxid = 0
+for image in fids.values():
+    if not 'fid' in image or not isinstance(image['fid'], int):
+        continue
+    if maxid < image['fid']:
+        maxid = image['fid']
+for image in fids.values():
+    if not 'fid' in image or not isinstance(image['fid'], int):
+        maxid += 1
+        image['fid'] = maxid
+
 for file in files:
-    count = count + 1
     try:
+        file = unicode(file, DEFAULT_ENCODING)
+        if file in fids:
+            continue
+
+        directory, name = os.path.split(file)
+        directory = directory.replace(os.sep, '/')
+        title, ext = os.path.splitext(name)
+
         width, height = 0, 0
-        if (file.endswith('.jpg') or file.endswith('.png') or file.endswith('.gif') or file.endswith('.bmp')):
+        if (file.endswith('.jpeg') or file.endswith('.jpg') or file.endswith('.png') or file.endswith('.gif') or file.endswith('.bmp')):
             with Image.open(file) as img:
                 width, height = img.size
 
-        file = unicode(file, DEFAULT_ENCODING)
-        directory, name = os.path.split(file)
-        directory = directory.replace('\\\\', '/').replace('\\', '/')
-        title, ext = os.path.splitext(name)
         image = {"name":name, "ext":ext, "directory":directory, "width":width, "height":height}
+        fids[file] = image
+        maxid += 1
+        image['fid'] = maxid
 
         if directory not in directoriesmap:
             directoriesmap[directory] = {}
@@ -88,67 +165,85 @@ for file in files:
             dirobj["images"] = []
             directories.append(dirobj)
         
-            message = str(count) + '/' + str(len(files))
-            print(message)
-    
         dirobj = directoriesmap[directory]
         dirobj["images"].append(image)
 
-        if file not in fids:
-            fids[file] = image
-            image['fid'] = 'fid-' + str(len(fids))
-    
+        if len(fids) % 1000 == 0:
+            percentage = round(100.0 * len(fids) / len(files), 2)
+            message = '{p:0=4} %'.format(p=percentage)
+            print(message)
+
     except BaseException as err:
         print("{0}".format(err))
         print(file)
-        print(str(type(file)))
-        print(traceback.format_exc())
+        #print(str(type(file)))
+        #print(traceback.format_exc())
+
+for dirobj in directories:
+    # dirobj['images'] = sorted(dirobj['images'])
+    dirobj['images'].sort(key=lambda image: image['name'])
+
+# print(json.dumps(directories, sort_keys=True, indent=1))
+with open(outputPath,'w') as fw:
+    json.dump(directories, fw, indent=1)
 
 
-_files = []
+from itertools import combinations
+import cv2
+import numpy
 
+filesFiltered = []
 for _file in files:
     try:
         file = unicode(_file, DEFAULT_ENCODING)
         width, height = fids[file]['width'], fids[file]['height']
         if width > MIN_WIDTH and height > MIN_HEIGHT:
-            _files.append(_file)
+            filesFiltered.append(file)
     except BaseException as err:
         print("{0}".format(err))
+# print(json.dumps(filesFiltered, sort_keys=True, indent=1))
 
-# print(json.dumps(_files, sort_keys=True, indent=2))
-
-
-from sys import argv
-from glob import glob
-from itertools import combinations
-
-import cv2
-
-if len(_files) > 0:
-    cv2.imread(_files[0])
+if len(filesFiltered) > 0:
+    stream = open(filesFiltered[0])
+    bytes = bytearray(stream.read())
+    numpyarray = numpy.asarray(bytes, dtype=numpy.uint8)
+    cv2.imdecode(numpyarray, cv2.IMREAD_UNCHANGED)
+    # cv2.imread(filesFiltered[0])
     print('cv2.imread succeeded!')
 
 image_hists = dict()
-
-count = 0
-for picture in _files:
-    count = count + 1
-    message = str(count) + '/' + str(len(files))
-    if count % 10 == 0:
-        print(message)
-
-    im = cv2.imread(picture)
-    image_hists[picture] = cv2.calcHist([im], [0], None, [256], [0, 256])
-
-combinations_len = 0
-for pictA, pictB in combinations(_files, 2):
-    combinations_len = combinations_len + 1
-
-count = 0
-for pictA, pictB in combinations(_files, 2):
-    count = count + 1
+for picture in filesFiltered:
     try:
+        stream = open(picture)
+        bytes = bytearray(stream.read())
+        numpyarray = numpy.asarray(bytes, dtype=numpy.uint8)
+        im = cv2.imdecode(numpyarray, cv2.IMREAD_UNCHANGED)
+        # im = cv2.imread(picture)
+        image_hists[picture] = cv2.calcHist([im], [0], None, [256], [0, 256])
+
+        if len(image_hists) % 100 == 0:
+            percentage = round(100.0 * len(image_hists) / len(files), 2)
+            message = '{p:0=4} %'.format(p=percentage)
+            print(message)
+    except BaseException as err:
+        print("{0}".format(err))
+        print(picture)
+
+count = 0
+combinations_len = 0
+for pictA, pictB in combinations(filesFiltered, 2):
+    combinations_len += 1
+
+for pictA, pictB in combinations(filesFiltered, 2):
+    count += 1
+    try:
+        if 'similarities' in fids[pictA]:
+            is_similar = False
+            for similarity in fids[pictA]['similarities']:
+                is_similar = similarity['fid'] == fids[pictB]['fid']
+            if is_similar:
+                continue
+
         image_histA, image_histB = image_hists[pictA], image_hists[pictB]
         result = cv2.compareHist(image_histA, image_histB, METHOD)
         is_similar = False
@@ -159,9 +254,6 @@ for pictA, pictB in combinations(_files, 2):
             if result > THRESHOLD:
                 is_similar = True
         if is_similar:
-            pictA = unicode(pictA, DEFAULT_ENCODING)
-            pictB = unicode(pictB, DEFAULT_ENCODING)
-
             similarity1 = {}
             similarity1["fid"] = fids[pictA]['fid']
             similarity1["value"] = result
@@ -176,6 +268,7 @@ for pictA, pictB in combinations(_files, 2):
                 fids[pictA]['similarities'] = []
             fids[pictA]['similarities'].append(similarity2)
 
+        if count % 100000 == 0:
             message = 'Calc similarity ' + str(count) + '/' + str(combinations_len)
             print(message)
 
@@ -187,8 +280,11 @@ for pictA, pictB in combinations(_files, 2):
         print(str(type(pictB)))
         print(traceback.format_exc())
 
+for dirobj in directories:
+    dirobj['similarities'].sort(key=lambda similarity: similarity['value'])
 
-#print(json.dumps(directories, sort_keys=True, indent=2))
-fw = open('./view/images.json','w')
-json.dump(directories, fw, indent=1)
+# print(json.dumps(directories, sort_keys=True, indent=1))
+with open(outputPath,'w') as fw:
+    json.dump(directories, fw, indent=1)
+
 
