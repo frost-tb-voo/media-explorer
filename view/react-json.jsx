@@ -2,10 +2,9 @@
 // from './lib/react-images/lib/Lightbox';
 
 const jsonFileList = [];
-jsonFileList.push('');
-jsonFileList.push('./images.json');
-//jsonFileList.push('./images-f-pictures.json');
-//jsonFileList.push('./images-f-movies.json');
+jsonFileList.push("./images.json");
+
+
 
 const TABLE_SIZE = 4 * 4;
 
@@ -432,6 +431,11 @@ class ImageBox extends React.Component {
   }
 
   renderController(image, directory) {
+    let imageName = '';
+    if (image) {
+      imageName = image.name;
+    }
+
     if (!this.state.showControl) {
       return (
         <div className="panel panel-default">
@@ -441,7 +445,7 @@ class ImageBox extends React.Component {
                 className="btn btn-primary btn-sm"
                 onClick={() => {
                 this.setState({showControl: true})
-              }}>show control</button>
+              }}>{ imageName }</button>
             </div>
           </div>
         </div>
@@ -490,10 +494,6 @@ class ImageBox extends React.Component {
         }.bind(this));
       }
 
-      let imageName = '';
-      if (image) {
-        imageName = image.name;
-      }
       let filterDirectoryLinks;
       if (image || this.state.directory) {
         let _directory = image
@@ -548,8 +548,8 @@ class ImageBox extends React.Component {
           }
           let value = Math.floor(1000 * similarity.value) / 1000;
           let path = similarity.directory + '/' + similarity.name;
-          if (path.length > 40) {
-            path = path.substring(0, 9) + '..' + path.substring(path.length - 30, path.length);
+          if (path.length > 50) {
+            path = path.substring(0, 9) + '..' + path.substring(path.length - 40, path.length);
           }
           return (
             <option key={path} value={JSON.stringify(similarities)}>{value}: {path}</option>
@@ -771,8 +771,8 @@ class ImageBox extends React.Component {
           .replace(/\\/g, '/');
         let length = _directory.images.length;
         var directoryName = directoryPath;
-        if (directoryName.length > 40) {
-          directoryName = directoryPath.substring(0, 9) + '..' + directoryPath.substring(directoryPath.length - 30, directoryPath.length);
+        if (directoryName.length > 50) {
+          directoryName = directoryPath.substring(0, 9) + '..' + directoryPath.substring(directoryPath.length - 40, directoryPath.length);
         }
         if (!length) {
           return (
