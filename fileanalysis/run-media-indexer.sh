@@ -1,9 +1,6 @@
 #!/bin/sh
 
-#TARGET=/home/titan-user/downloads
-TARGET1=/mnt/sdb1fs
-TARGET2=/mnt/sdc1fs
-TARGET="${TARGET1} ${TARGET2}"
+TARGET=/home
 
 pip install pip-tools==1.9.0
 pip-compile requirements.in

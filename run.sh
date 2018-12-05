@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIR=`pwd`
-TARGET=~
+TARGET=/home
 
 sudo -E docker run --rm -it \
  -v ${DIR}/fileanalysis:/fileanalysis:rw \
