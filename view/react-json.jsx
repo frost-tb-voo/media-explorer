@@ -7,6 +7,7 @@ jsonFileList.push("./images.json");
 
 
 const TABLE_SIZE = 4 * 4;
+const MAX_PATH_LENGTH = 50;
 
 class ImageBox extends React.Component {
   constructor(props) {
@@ -548,8 +549,8 @@ class ImageBox extends React.Component {
           }
           let value = Math.floor(1000 * similarity.value) / 1000;
           let path = similarity.directory + '/' + similarity.name;
-          if (path.length > 50) {
-            path = path.substring(0, 9) + '..' + path.substring(path.length - 40, path.length);
+          if (path.length > MAX_PATH_LENGTH) {
+            path = path.substring(0, 9) + '..' + path.substring(path.length - MAX_PATH_LENGTH + 10, path.length);
           }
           return (
             <option key={path} value={JSON.stringify(similarities)}>{value}: {path}</option>
@@ -771,8 +772,8 @@ class ImageBox extends React.Component {
           .replace(/\\/g, '/');
         let length = _directory.images.length;
         var directoryName = directoryPath;
-        if (directoryName.length > 50) {
-          directoryName = directoryPath.substring(0, 9) + '..' + directoryPath.substring(directoryPath.length - 40, directoryPath.length);
+        if (directoryName.length > MAX_PATH_LENGTH) {
+          directoryName = directoryPath.substring(0, 9) + '..' + directoryPath.substring(directoryPath.length - MAX_PATH_LENGTH + 10, directoryPath.length);
         }
         if (!length) {
           return (
