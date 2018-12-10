@@ -771,9 +771,9 @@ class ImageBox extends React.Component {
           .replace(/\\\\/g, '/')
           .replace(/\\/g, '/');
         let length = _directory.images.length;
-        var directoryName = directoryPath;
+        let directoryName = directoryPath.replace('/' + this.state.directory + '/', './');
         if (directoryName.length > MAX_PATH_LENGTH) {
-          directoryName = directoryPath.substring(0, 9) + '..' + directoryPath.substring(directoryPath.length - MAX_PATH_LENGTH + 10, directoryPath.length);
+          directoryName = directoryName.substring(0, 9) + '..' + directoryName.substring(directoryName.length - MAX_PATH_LENGTH + 10, directoryName.length);
         }
         if (!length) {
           return (
