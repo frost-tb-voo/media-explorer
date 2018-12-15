@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import csv
+import hashlib
 import json
 import os
 import traceback
@@ -37,14 +39,31 @@ parser.add_argument(
     required=True,
     help='output json path'
 )
+parser.add_argument(
+    '-c', '--checksum',
+    type=str,
+    dest='checksum',
+    default='../view/checksums.csv',
+    required=True,
+    help='output checksum list csv path'
+)
+parser.add_argument(
+    '-s', '--similarity',
+    type=bool,
+    dest='similarity',
+    default=False,
+    help='calculate similarity'
+)
 
 args = parser.parse_args()
 print (args)
 
 
-#targetDirList = [os.path.dirname(__file__)]
+targetDirList = [os.path.dirname(__file__)]
 targetDirList = args.directories
 outputPath = args.output
+isCalcSimilarity = args.similarity
+checksumPath = args.checksum
 
 
 DEFAULT_ENCODING = 'utf8'
@@ -66,6 +85,21 @@ METHOD = 3
 # THRESHOLD=0.15
 THRESHOLD = 0.07
 
+
+with open(checksumPath, 'r') as fr:
+    reader = csv.reader(fr, lineterminator='\n')
+    # header = next(reader)
+    for row in reader:
+        checksum = row[0]
+        directory = row[1]
+        name = row[2]
+        removal = row[4]
+        if len(removal) > 0 and int(removal) > 0:
+            file = directory + os.sep + name
+            os.remove(file)
+
+
+targetDirList = []
 
 targetFiles = []
 for targetDir in targetDirList:
@@ -99,13 +133,18 @@ files.extend(imgs)
 directories = []
 directoriesmap = {}
 fids = {}
+sizesmap = {}
 
 if os.path.exists(outputPath):
+    print('Load ' + outputPath)
     with open(outputPath, 'r') as fr:
         directories = json.load(fr)
 
 notExists = []
+count = 0
 for dirobj in directories:
+    count += 1
+
     directory = dirobj['directory']
     if not os.path.exists(directory):
         notExists.append(dirobj)
@@ -122,12 +161,29 @@ for dirobj in directories:
     for image in imagesNotExists:
         dirobj['images'].remove(image)
 
-    for image in dirobj['images']:
-        if 'similarities' in image:
-            del image['similarities']
+    if count % 100 == 0:
+        percentage = round(100.0 * count / len(directories), 2)
+        message = 're-indexing {p:0=4} %'.format(p=percentage)
+        print(message)
 
 for dirobj in notExists:
     directories.remove(dirobj)
+
+for dirobj in directories:
+    directory = dirobj['directory']
+
+    for image in dirobj['images']:
+        if 'size' not in image:
+            file = directory + os.sep + image['name']
+            image['size'] = os.path.getsize(file)
+        size = image['size']
+        if size not in sizesmap:
+            sizesmap[size] = []
+        sizesmap[size].append(image)
+
+    for image in dirobj['images']:
+        if 'similarities' in image:
+            del image['similarities']
 
 maxid = 0
 for image in fids.values():
@@ -149,6 +205,7 @@ for file in files:
         directory, name = os.path.split(file)
         directory = directory.replace(os.sep, '/')
         title, ext = os.path.splitext(name)
+        size = os.path.getsize(file)
 
         width, height = 0, 0
         if (file.endswith('.jpeg') or file.endswith('.jpg') or file.endswith(
@@ -157,7 +214,7 @@ for file in files:
                 width, height = img.size
 
         image = {'name': name, 'ext': ext, 'directory': directory,
-                 'width': width, 'height': height}
+                 'width': width, 'height': height, 'size': size}
         fids[file] = image
         maxid += 1
         image['fid'] = maxid
@@ -172,9 +229,13 @@ for file in files:
         dirobj = directoriesmap[directory]
         dirobj['images'].append(image)
 
+        if size not in sizesmap:
+            sizesmap[size] = []
+        sizesmap[size].append(image)
+
         if len(fids) % 1000 == 0:
             percentage = round(100.0 * len(fids) / len(files), 2)
-            message = '{p:0=4} %'.format(p=percentage)
+            message = 'indexing {p:0=4} %'.format(p=percentage)
             print(message)
 
     except BaseException as err:
@@ -182,6 +243,7 @@ for file in files:
         print(file)
         # print(str(type(file)))
         # print(traceback.format_exc())
+        print('')
 
 for dirobj in directories:
     # dirobj['images'] = sorted(dirobj['images'])
@@ -190,6 +252,53 @@ for dirobj in directories:
 # print(json.dumps(directories, sort_keys=True, indent=1))
 with open(outputPath, 'w') as fw:
     json.dump(directories, fw, indent=1)
+
+
+rows = []
+count = 0
+for size in sizesmap:
+    count += 1
+
+    if len(sizesmap[size]) < 2:
+        continue
+
+    checksumsmap = {}
+    for image in sizesmap[size]:
+        file = image['directory'] + os.sep + image['name']
+        # file = unicode(file, DEFAULT_ENCODING)
+
+        sha1 = hashlib.sha1()
+        with open(file, 'rb') as fr:
+            for chunk in iter(lambda: fr.read(2048 * sha1.block_size), b''):
+                sha1.update(chunk)
+        checksum = sha1.hexdigest()
+
+        if checksum not in checksumsmap:
+            checksumsmap[checksum] = []
+        checksumsmap[checksum].append(image)
+
+    for checksum in checksumsmap:
+        if len(checksumsmap[checksum]) < 2:
+            continue
+
+        for image in checksumsmap[checksum]:
+            row = []
+            rows.append(row)
+            row.append(checksum)
+            row.append(image['directory'].encode(DEFAULT_ENCODING))
+            row.append(image['name'].encode(DEFAULT_ENCODING))
+
+    if count % 100 == 0:
+        percentage = round(100.0 * count / len(sizesmap), 2)
+        message = 'calc checksum {p:0=4} %'.format(p=percentage)
+        print(message)
+
+with open(checksumPath, 'w') as fw:
+    writer = csv.writer(fw, lineterminator='\n')
+    writer.writerows(rows)
+
+if not isCalcSimilarity:
+    os._exit(0)
 
 
 filesFiltered = []
@@ -281,8 +390,8 @@ for pictA, pictB in combinations(filesFiltered, 2):
         print(str(type(pictB)))
         print(traceback.format_exc())
 
-for dirobj in directories:
-    dirobj['similarities'].sort(key=lambda similarity: similarity['value'])
+# for dirobj in directories:
+#    dirobj['similarities'].sort(key=lambda similarity: similarity['value'])
 
 # print(json.dumps(directories, sort_keys=True, indent=1))
 with open(outputPath, 'w') as fw:
