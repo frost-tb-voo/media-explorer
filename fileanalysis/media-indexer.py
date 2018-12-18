@@ -88,18 +88,21 @@ THRESHOLD = 0.07
 
 with open(checksumPath, 'r') as fr:
     reader = csv.reader(fr, lineterminator='\n')
-    header = next(reader)
-    for row in reader:
-        if len(row) < 4:
-            continue
-        checksum = row[0]
-        directory = row[1]
-        name = row[2]
-        removal = row[3]
-        if len(removal) > 0 and int(removal) > 0:
-            file = directory + os.sep + name
-            os.remove(file)
-            print('remove ' + file)
+    try:
+        header = reader.next()
+        for row in reader:
+            if len(row) < 4:
+                continue
+            checksum = row[0]
+            directory = row[1]
+            name = row[2]
+            removal = row[3]
+            if len(removal) > 0 and int(removal) > 0:
+                file = directory + os.sep + name
+                os.remove(file)
+                print('remove ' + file)
+    except BaseException as err:
+        print('{0}'.format(err))
 
 
 targetDirList = []
