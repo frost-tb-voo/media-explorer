@@ -45,7 +45,7 @@ parser.add_argument(
     dest='checksum',
     default='../view/checksums.csv',
     required=True,
-    help='output checksum list csv path'
+    help='in/output checksum list csv path'
 )
 parser.add_argument(
     '-s', '--similarity',
@@ -88,15 +88,18 @@ THRESHOLD = 0.07
 
 with open(checksumPath, 'r') as fr:
     reader = csv.reader(fr, lineterminator='\n')
-    # header = next(reader)
+    header = next(reader)
     for row in reader:
+        if len(row) < 4:
+            continue
         checksum = row[0]
         directory = row[1]
         name = row[2]
-        removal = row[4]
+        removal = row[3]
         if len(removal) > 0 and int(removal) > 0:
             file = directory + os.sep + name
             os.remove(file)
+            print('remove ' + file)
 
 
 targetDirList = []
@@ -116,15 +119,21 @@ imgs = filter(lambda f: f.endswith('.jpg'), targetFiles)
 files.extend(imgs)
 imgs = filter(lambda f: f.endswith('.png'), targetFiles)
 files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.bmp'), targetFiles)
-files.extend(imgs)
 imgs = filter(lambda f: f.endswith('.gif'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f: f.endswith('.bmp'), targetFiles)
 files.extend(imgs)
 imgs = filter(lambda f: f.endswith('.flv'), targetFiles)
 files.extend(imgs)
 imgs = filter(lambda f: f.endswith('.swf'), targetFiles)
 files.extend(imgs)
 imgs = filter(lambda f: f.endswith('.mp4'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f: f.endswith('.mp3'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f: f.endswith('.aac'), targetFiles)
+files.extend(imgs)
+imgs = filter(lambda f: f.endswith('.ogg'), targetFiles)
 files.extend(imgs)
 
 # print(json.dumps(files, sort_keys=True, indent=1))
@@ -255,6 +264,8 @@ with open(outputPath, 'w') as fw:
 
 
 rows = []
+header = ['checksum','directory path','file name','check with `1` if the file would be removed']
+rows.append(header)
 count = 0
 for size in sizesmap:
     count += 1
