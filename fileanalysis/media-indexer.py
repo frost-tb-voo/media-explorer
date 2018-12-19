@@ -115,29 +115,35 @@ for targetDir in targetDirList:
 
 # print(json.dumps(targetFiles, sort_keys=True, indent=1))
 
+imgExtPath = os.path.dirname(__file__) + '/media-indexer.img.ext'
+imgExts = ['.jpeg','.jpg','.png','.gif','.bmp']
+if os.path.exists(imgExtPath):
+    imgExts = []
+    with open(imgExtPath, 'r') as fext:
+        for line in fext:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            imgExts.append(line)
+videoExtPath = os.path.dirname(__file__) + '/media-indexer.video.ext'
+mediaExts = ['.flv','.swf','.mp4','.mp3','.aac','.ogg']
+if os.path.exists(videoExtPath):
+    mediaExts = []
+    with open(videoExtPath, 'r') as fext:
+        for line in fext:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            mediaExts.append(line)
+mediaExts.extend(imgExts)
+
 files = []
-imgs = filter(lambda f: f.endswith('.jpeg'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.jpg'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.png'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.gif'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.bmp'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.flv'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.swf'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.mp4'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.mp3'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.aac'), targetFiles)
-files.extend(imgs)
-imgs = filter(lambda f: f.endswith('.ogg'), targetFiles)
-files.extend(imgs)
+for targetFile in targetFiles:
+    for ext in mediaExts:
+        if not targetFile.endswith(ext):
+            continue
+        files.append(targetFile)
+        break
 
 # print(json.dumps(files, sort_keys=True, indent=1))
 
@@ -220,10 +226,12 @@ for file in files:
         size = os.path.getsize(file)
 
         width, height = 0, 0
-        if (file.endswith('.jpeg') or file.endswith('.jpg') or file.endswith(
-                '.png') or file.endswith('.gif') or file.endswith('.bmp')):
+        for ext in imgExts:
+            if not file.endswith(ext):
+                continue
             with Image.open(file) as img:
                 width, height = img.size
+            break
 
         image = {'name': name, 'ext': ext, 'directory': directory,
                  'width': width, 'height': height, 'size': size}

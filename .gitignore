@@ -63,3 +63,6 @@ typings/
 **/requirements.txt
 **/react-images
 
+**/*.jpg
+**/*.png
+
