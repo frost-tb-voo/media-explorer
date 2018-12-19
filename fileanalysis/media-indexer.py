@@ -86,6 +86,7 @@ METHOD = 3
 THRESHOLD = 0.07
 
 
+checksumsCache = {}
 with open(checksumPath, 'r') as fr:
     reader = csv.reader(fr, lineterminator='\n')
     try:
@@ -96,12 +97,14 @@ with open(checksumPath, 'r') as fr:
             checksum = row[0]
             directory = row[1]
             name = row[2]
+            file = directory + os.sep + name
+            checksumsCache[file] = checksum
+
             removal = row[3]
-            if len(removal) > 0 and int(removal) > 0:
-                file = directory + os.sep + name
-                if os.path.exists(file):
-                    os.remove(file)
+            if len(removal) > 0 and int(removal) > 0 and os.path.exists(file):
+                os.remove(file)
                 print('remove ' + file)
+
     except BaseException as err:
         print('{0}'.format(err))
 
@@ -110,6 +113,7 @@ with open(checksumPath, 'r') as fr:
 
 targetFiles = []
 for targetDir in targetDirList:
+    print('Search ' + targetDir)
     for root, dirs, files in os.walk(os.path.abspath(targetDir)):
         targets = [os.path.join(root, f) for f in files]
         targetFiles.extend(targets)
@@ -290,11 +294,15 @@ for size in sizesmap:
         file = image['directory'] + os.sep + image['name']
         # file = unicode(file, DEFAULT_ENCODING)
 
-        sha1 = hashlib.sha1()
-        with open(file, 'rb') as fr:
-            for chunk in iter(lambda: fr.read(2048 * sha1.block_size), b''):
-                sha1.update(chunk)
-        checksum = sha1.hexdigest()
+        checksum = ''
+        if file in checksumsCache:
+            checksum = checksumsCache[file]
+        else:
+            sha1 = hashlib.sha1()
+            with open(file, 'rb') as fr:
+                for chunk in iter(lambda: fr.read(2048 * sha1.block_size), b''):
+                    sha1.update(chunk)
+            checksum = sha1.hexdigest()
 
         if checksum not in checksumsmap:
             checksumsmap[checksum] = []
