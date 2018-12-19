@@ -105,7 +105,7 @@ with open(checksumPath, 'r') as fr:
         print('{0}'.format(err))
 
 
-targetDirList = []
+#targetDirList = []
 
 targetFiles = []
 for targetDir in targetDirList:
