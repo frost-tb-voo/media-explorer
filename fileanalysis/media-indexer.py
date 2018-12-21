@@ -87,26 +87,27 @@ THRESHOLD = 0.07
 
 
 checksumsCache = {}
-with open(checksumPath, 'r') as fr:
-    reader = csv.reader(fr, lineterminator='\n')
-    try:
-        header = reader.next()
-        for row in reader:
-            if len(row) < 4:
-                continue
-            checksum = row[0]
-            directory = row[1]
-            name = row[2]
-            file = directory + os.sep + name
-            checksumsCache[file] = checksum
+if os.path.exists(checksumPath):
+    with open(checksumPath, 'r') as fr:
+        reader = csv.reader(fr, lineterminator='\n')
+        try:
+            header = reader.next()
+            for row in reader:
+                if len(row) < 4:
+                    continue
+                checksum = row[0]
+                directory = row[1]
+                name = row[2]
+                file = directory + os.sep + name
+                checksumsCache[file] = checksum
 
-            removal = row[3]
-            if len(removal) > 0 and int(removal) > 0 and os.path.exists(file):
-                os.remove(file)
-                print('remove ' + file)
+                removal = row[3]
+                if len(removal) > 0 and int(removal) > 0 and os.path.exists(file):
+                    os.remove(file)
+                    print('remove ' + file)
 
-    except BaseException as err:
-        print('{0}'.format(err))
+        except BaseException as err:
+            print('{0}'.format(err))
 
 
 #targetDirList = []
