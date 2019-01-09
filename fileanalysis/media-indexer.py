@@ -142,6 +142,7 @@ if os.path.exists(videoExtPath):
                 continue
             mediaExts.append(line)
 mediaExts.extend(imgExts)
+print (json.dumps(mediaExts, sort_keys=True, indent=1))
 
 files = []
 for targetFile in targetFiles:
