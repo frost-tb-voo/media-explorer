@@ -323,7 +323,7 @@ class ImageBox extends React.Component {
       let _image = images[0];
       let _imagePath = imagePathes[0];
       let mediaTag = this.renderImage(imgClassName, imageStyle, _imagePath);
-      if (_image.ext == '.mp4' || _image.ext == '.flv' || _image.ext == '.swf') {
+      if (_image.ext == '.mp4' || _image.ext == '.flv' || _image.ext == '.swf' || _image.ext == '.wmv' || _image.ext == '.avi' || _image.ext == 'mpeg' || _image.ext == '.mpg' || _image.ext == '.aac' || _image.ext == '.h264' || _image.ext == '.wave' || _image.ext == '.wav' || _image.ext == '.mp3' || _image.ext == '.flac' || _image.ext == '.opus' || _image.ext == '.spx' || _image.ext == '.ogx' || _image.ext == '.ogv' || _image.ext == '.oga' || _image.ext == '.ogg' || _image.ext == '.webm') {
         mediaTag = this.renderVideo(imgClassName, imageStyle, _imagePath, _image.ext);
       }
       return (
@@ -360,7 +360,7 @@ class ImageBox extends React.Component {
         .map(function (_image, jj) {
           let _imagePath = _image.imagePath;
           let mediaTag = this.renderImage(imgClassName, imageStyle, _imagePath);
-          if (_image.ext == '.mp4' || _image.ext == '.flv' || _image.ext == '.swf') {
+          if (_image.ext == '.mp4' || _image.ext == '.flv' || _image.ext == '.swf' || _image.ext == '.wmv' || _image.ext == '.avi' || _image.ext == 'mpeg' || _image.ext == '.mpg' || _image.ext == '.aac' || _image.ext == '.h264' || _image.ext == '.wave' || _image.ext == '.wav' || _image.ext == '.mp3' || _image.ext == '.flac' || _image.ext == '.opus' || _image.ext == '.spx' || _image.ext == '.ogx' || _image.ext == '.ogv' || _image.ext == '.oga' || _image.ext == '.ogg' || _image.ext == '.webm') {
             mediaTag = this.renderVideo(imgClassName, imageStyle, _imagePath);
           }
           return (
