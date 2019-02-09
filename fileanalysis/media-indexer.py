@@ -233,12 +233,9 @@ for file in files:
         size = os.path.getsize(file)
 
         width, height = 0, 0
-        for ext in imgExts:
-            if not file.endswith(ext):
-                continue
+        if ext in imgExts:
             with Image.open(file) as img:
                 width, height = img.size
-            break
 
         image = {'name': name, 'ext': ext, 'directory': directory,
                  'width': width, 'height': height, 'size': size}
