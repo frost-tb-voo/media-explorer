@@ -27,27 +27,27 @@ class ImageBox extends React.Component {
 
     document.addEventListener('keypress', (event) => {
       const keyName = event.key;
+      console.log(`Key pressed ${keyName}`);
 
       if (keyName === 'Control') {
         return;
       }
 
-      if (event.ctrlKey) {} else {
-        console.log(`Key pressed ${keyName}`);
+      //if (event.ctrlKey) {} else {
         if (keyName === 's' || keyName === 'S' || keyName === 'h' || keyName === 'H') {
           if (this.state.showControl) {
             this.setState({showControl: false});
           } else {
             this.setState({showControl: true});
           }
-        } else if (keyName === 'ArrowUp') {
+        } else if (keyName === 'ArrowUp' || keyName === 'u' || keyName === 'U') {
           this.explorer({images: this.state.images, index: this.state.index});
-        } else if (keyName === 'ArrowLeft' || keyName === 'Backspace' || keyName === 'Delete' || keyName === 'b' || keyName === 'B') {
+        } else if (keyName === 'ArrowLeft' || keyName === 'Backspace' || keyName === 'Delete' || keyName === 'b' || keyName === 'B' || keyName === 'l' || keyName === 'L') {
           this.setPrevImage(1 * this.state.length);
         } else {
           this.setNextImage(1 * this.state.length);
         }
-      }
+      //}
     }, false);
   }
 
