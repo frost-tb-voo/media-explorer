@@ -69,4 +69,5 @@ typings/
 
 **/code-server
 **/.local
+**/react-json.jsx
 
