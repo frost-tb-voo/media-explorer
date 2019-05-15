@@ -59,10 +59,14 @@ typings/
 
 **/*.bulk
 **/*.zip
-**/images.json
+**/images*.json
+**/*.csv
 **/requirements.txt
 **/react-images
 
 **/*.jpg
 **/*.png
+
+**/code-server
+**/.local
 
