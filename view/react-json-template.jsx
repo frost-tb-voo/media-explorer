@@ -416,7 +416,7 @@ class ImageBox extends React.Component {
 <script src="//vjs.zencdn.net/5.19/video.min.js"></script>
     */
     }
-    return (<video
+    return (<video controls
       className={imgClassName}
       style={imageStyle}
       key={imagePath}
