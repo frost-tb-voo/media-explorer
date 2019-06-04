@@ -71,3 +71,7 @@ typings/
 **/.local
 **/react-json.jsx
 
+/.local
+/code-server
+/.Trash-0
+
