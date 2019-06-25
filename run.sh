@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR=`pwd`
+DIR=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
 TARGET=/home
 
 echo Now mounting ${TARGET} volume to the analysis container..
