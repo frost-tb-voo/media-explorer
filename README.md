@@ -1,5 +1,4 @@
 # media-explorer
-![](https://img.shields.io/travis/frost-tb-voo/media-explorer.svg?style=flat-square)
 ![GitHub stars](https://img.shields.io/github/stars/frost-tb-voo/media-explorer.svg?style=flat-square)
 ![GitHub license](https://img.shields.io/github/license/frost-tb-voo/media-explorer.svg?style=flat-square)
 
