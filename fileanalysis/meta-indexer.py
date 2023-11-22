@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import os
-import traceback
+# import traceback
 
 targetDir = '.'
 targetFiles = []
@@ -14,7 +14,10 @@ for root, dirs, files in os.walk(os.path.abspath(targetDir)):
             continue
         if not name.startswith('images'):
             continue
+        if name == 'images.json':
+            continue
         targetFiles.append(name)
+targetFiles.sort()
 
 # subprocess.run(['cp', 'react-json-template.jsx', 'react-json.jsx'])
 os.system('cp react-json-template.jsx react-json.jsx')
@@ -23,5 +26,5 @@ metaPath = ''
 with open('react-json.jsx', 'a') as fw:
     for targetFile in targetFiles:
         fw.write('jsonFileList.push("./' + targetFile + '");\n')
-
-
+    fw.write('ReactDOM.render(\n')
+    fw.write('  <ImageBox/>, document.getElementById("root"));\n')
