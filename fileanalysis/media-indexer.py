@@ -15,7 +15,7 @@ from PIL import Image
 
 """similarity analysis."""
 
-#import glob
+# import glob
 
 
 desc = u'{0} [Args] [Options]\nDetailed options -h or --help'.format(__file__)
@@ -56,7 +56,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-print (args)
+print(args)
 
 
 targetDirList = [os.path.dirname(__file__)]
@@ -110,7 +110,7 @@ if os.path.exists(checksumPath):
             print('{0}'.format(err))
 
 
-#targetDirList = []
+# targetDirList = []
 
 targetFiles = []
 for targetDir in targetDirList:
@@ -122,7 +122,7 @@ for targetDir in targetDirList:
 # print(json.dumps(targetFiles, sort_keys=True, indent=1))
 
 imgExtPath = os.path.dirname(__file__) + '/media-indexer.img.ext'
-imgExts = ['.jpeg','.jpg','.png','.gif','.bmp']
+imgExts = ['.jpeg', '.jpg', '.png', '.gif', '.bmp']
 if os.path.exists(imgExtPath):
     imgExts = []
     with open(imgExtPath, 'r') as fext:
@@ -132,7 +132,7 @@ if os.path.exists(imgExtPath):
                 continue
             imgExts.append(line)
 videoExtPath = os.path.dirname(__file__) + '/media-indexer.video.ext'
-mediaExts = ['.flv','.swf','.mp4','.mp3','.aac','.ogg']
+mediaExts = ['.flv', '.swf', '.mp4', '.mp3', '.aac', '.ogg']
 if os.path.exists(videoExtPath):
     mediaExts = []
     with open(videoExtPath, 'r') as fext:
@@ -142,7 +142,7 @@ if os.path.exists(videoExtPath):
                 continue
             mediaExts.append(line)
 mediaExts.extend(imgExts)
-print (json.dumps(mediaExts, sort_keys=True, indent=1))
+print(json.dumps(mediaExts, sort_keys=True, indent=1))
 
 files = []
 for targetFile in targetFiles:
@@ -212,12 +212,12 @@ for dirobj in directories:
 
 maxid = 0
 for image in fids.values():
-    if not 'fid' in image or not isinstance(image['fid'], int):
+    if 'fid' not in image or not isinstance(image['fid'], int):
         continue
     if maxid < image['fid']:
         maxid = image['fid']
 for image in fids.values():
-    if not 'fid' in image or not isinstance(image['fid'], int):
+    if 'fid' not in image or not isinstance(image['fid'], int):
         maxid += 1
         image['fid'] = maxid
 
@@ -279,7 +279,8 @@ with open(outputPath, 'w') as fw:
 
 
 rows = []
-header = ['checksum','directory path','file name','check with `1` if the file would be removed']
+header = ['checksum', 'directory path', 'file name',
+          'check with `1` if the file would be removed']
 rows.append(header)
 count = 0
 for size in sizesmap:
