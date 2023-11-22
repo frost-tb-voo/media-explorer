@@ -4,7 +4,11 @@
 const jsonFileList = [];
 jsonFileList.push("./images.json");
 
-
+const locationUrl = new URL(window.location)
+const searchParams = locationUrl.searchParams
+const searchJsonFile = searchParams.get("json_file")
+const searchFile = searchParams.get("file")
+const searchDir = searchParams.get("dir")
 
 const TABLE_SIZE = 4 * 4;
 const MAX_PATH_LENGTH = 50;
@@ -13,8 +17,13 @@ class ImageBox extends React.Component {
   constructor(props) {
     super(props);
     let length = 1;
+    let jsonFile = jsonFileList[0]
+    // jsonFile = jsonFileList[jsonFileList.length - 1],
+    if (searchJsonFile) {
+      jsonFile = searchJsonFile
+    }
     this.state = {
-      jsonFile: jsonFileList[jsonFileList.length - 1],
+      jsonFile: jsonFile,
       showControl: true,
       style: {
         maxWidth: this.computeMaxWidth(length),
@@ -105,6 +114,7 @@ class ImageBox extends React.Component {
               fids[image.fid] = image;
             }
           }
+
           console.log('extList ' + JSON.stringify(extList, null, 2))
           this.setState({
             jsonFile: jsonFile,
@@ -326,6 +336,9 @@ class ImageBox extends React.Component {
       if (_image.ext == '.mp4' || _image.ext == '.flv' || _image.ext == '.swf' || _image.ext == '.wmv' || _image.ext == '.avi' || _image.ext == 'mpeg' || _image.ext == '.mpg' || _image.ext == '.aac' || _image.ext == '.h264' || _image.ext == '.wave' || _image.ext == '.wav' || _image.ext == '.mp3' || _image.ext == '.flac' || _image.ext == '.opus' || _image.ext == '.spx' || _image.ext == '.ogx' || _image.ext == '.ogv' || _image.ext == '.oga' || _image.ext == '.ogg' || _image.ext == '.webm') {
         mediaTag = this.renderVideo(imgClassName, imageStyle, _imagePath, _image.ext);
       }
+
+      document.title = this.state.jsonFile + ":" + _image.name
+
       return (
         <div ref='images' onClick={() => this.setNextImage(1 * this.state.length)}>
           {mediaTag}
@@ -433,8 +446,10 @@ class ImageBox extends React.Component {
 
   renderController(image, directory) {
     let imageName = '';
+    let imageDir = '';
     if (image) {
       imageName = image.name;
+      imageDir = image.directory;
     }
 
     if (!this.state.showControl) {
@@ -613,8 +628,17 @@ class ImageBox extends React.Component {
         </button>
       );
 
-      let sortButton = this.renderSortButton(false);
-      let sortAltButton = this.renderSortButton(true);
+      const sortButton = this.renderSortButton(false);
+      const sortAltButton = this.renderSortButton(true);
+
+      const directUrl = (() => {
+        const searchParams = new URLSearchParams({json_file: this.state.jsonFile, file: imageName, dir: imageDir})
+        console.log(searchParams)
+        const directUrl = new URL(locationUrl)
+        directUrl.search = searchParams.toString()
+        console.log(directUrl.toString())
+        return directUrl
+      })()
 
       return (
         <div
@@ -653,7 +677,11 @@ class ImageBox extends React.Component {
             <div className="form-inline">
               <ol className="breadcrumb">
                 {filterDirectoryLinks}
-                <li className="active">{imageName}</li>
+                <li className="active">
+                  <a target="_blank" href={directUrl.toString()}>
+                  {imageName}
+                  </a>
+                </li>
               </ol>
             </div>
             <div className="form-inline">
@@ -887,9 +915,33 @@ class ImageBox extends React.Component {
           _images.push(_image);
         }
       }
+
+      let index = 0
+      if (searchJsonFile == this.state.jsonFile && (searchFile || searchDir)) {
+        console.log("Search  " + searchFile + " in " + searchJsonFile)
+        for (let ii=0;ii<_images.length;ii++) {
+          let _image = _images[ii]
+          if (
+             !searchDir && searchFile && _image.name.includes(searchFile)
+          || searchDir && !searchFile && _image.directory.includes(searchDir)
+          || searchDir && searchFile && _image.name.includes(searchFile) && _image.directory.includes(searchDir)
+             ) {
+            index = ii
+            break
+          }
+        }
+        if (!index) {
+          console.log(searchFile + " not in " + searchJsonFile)
+        }
+      }
+
       if (_images.length) {
         // TODO before rendering
-        this.setState({images: _images});
+        if (index) {
+          this.setState({images: _images, index: index});
+        } else {
+          this.setState({images: _images});
+        }
         return images;
       }
     }
@@ -926,5 +978,6 @@ class ImageBox extends React.Component {
 
 }
 
-ReactDOM.render(
-  <ImageBox/>, document.getElementById('root'));
+//ReactDOM.render(
+//  <ImageBox/>, document.getElementById('root'));
+
